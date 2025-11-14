@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Plugin(
     id = "velocityplaceholders",
     name = "VelocityPlaceholders",
-    version = "1.0.0",
+    version = "1.1.0",
     description = "Provides placeholders for server player counts",
     authors = {"choice21"}
 )
@@ -79,6 +79,11 @@ public class VelocityPlaceholders extends AbstractOnlinePlayersPlugin {
                                     .orElse(0);
                             serverPlayerCounts.put(serverName, playerCount);
                         } else {
+                            if (throwable != null) {
+                                logger.warn("Failed to ping server '" + serverName + "' (id: " + serverId + "): " + throwable.getMessage());
+                            } else {
+                                logger.warn("Failed to ping server '" + serverName + "' (id: " + serverId + "): No response");
+                            }
                             serverPlayerCounts.put(serverName, 0);
                         }
                     });
