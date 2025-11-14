@@ -1,8 +1,13 @@
-# VelocityPlaceholders Configuration
+# OnlinePlayersPlugin Configuration
 # Add servers you want to track player counts for
 # Format: server_name = "server_id"
 # The server_name is used in the placeholder: %online_<server_name>%
-# The server_id is the actual server identifier in Velocity
+#
+# On Velocity: server_id is the registered server name in velocity.toml
+# On Paper: server_id can be:
+#   - "current" or "this" to get the current server's player count
+#   - "host:port" format (e.g., "localhost:25566") to ping another server
+#   - A BungeeCord server name if using BungeeCord API
 
 [servers]
 modernprac = "modernprac"

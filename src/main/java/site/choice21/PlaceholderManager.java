@@ -5,9 +5,9 @@ import java.util.regex.Pattern;
 
 public class PlaceholderManager {
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%online_([^%]+)%");
-    private final VelocityPlaceholders plugin;
+    private final OnlinePlayersPlugin plugin;
     
-    public PlaceholderManager(VelocityPlaceholders plugin) {
+    public PlaceholderManager(OnlinePlayersPlugin plugin) {
         this.plugin = plugin;
     }
     

@@ -7,16 +7,9 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
-import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -28,21 +21,19 @@ import java.util.concurrent.TimeUnit;
     description = "Provides placeholders for server player counts",
     authors = {"choice21"}
 )
-public class VelocityPlaceholders {
+public class VelocityPlaceholders extends AbstractOnlinePlayersPlugin {
     
     private final ProxyServer server;
-    private final Logger logger;
+    private final org.slf4j.Logger slf4jLogger;
     private final Path dataDirectory;
-    private PluginConfig config;
-    private final Map<String, Integer> serverPlayerCounts = new HashMap<>();
-    private PlaceholderManager placeholderManager;
+    private final VelocityLogger logger;
     
     @Inject
-    public VelocityPlaceholders(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public VelocityPlaceholders(ProxyServer server, org.slf4j.Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
-        this.logger = logger;
+        this.slf4jLogger = logger;
         this.dataDirectory = dataDirectory;
-        this.placeholderManager = new PlaceholderManager(this);
+        this.logger = new VelocityLogger(logger);
     }
     
     @Subscribe
@@ -61,46 +52,6 @@ public class VelocityPlaceholders {
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         logger.info("VelocityPlaceholders is shutting down...");
-    }
-    
-    private void loadConfig() {
-        File configFile = dataDirectory.resolve("config.toml").toFile();
-        
-        if (!configFile.exists()) {
-            // Create default config
-            try {
-                dataDirectory.toFile().mkdirs();
-                try (InputStream in = getClass().getResourceAsStream("/config.toml")) {
-                    if (in != null) {
-                        Files.copy(in, configFile.toPath());
-                    } else {
-                        // Create a default config if resource doesn't exist
-                        createDefaultConfig(configFile);
-                    }
-                }
-            } catch (IOException e) {
-                logger.error("Failed to create default config file", e);
-                return;
-            }
-        }
-        
-        try {
-            config = PluginConfig.load(configFile.toPath());
-            logger.info("Loaded configuration with {} servers", config.getServers().size());
-        } catch (IOException e) {
-            logger.error("Failed to load config file", e);
-            config = new PluginConfig();
-        }
-    }
-    
-    private void createDefaultConfig(File configFile) throws IOException {
-        String defaultConfig = "# VelocityPlaceholders Configuration\n" +
-                "# Add servers you want to track player counts for\n" +
-                "# Format: server_name = \"server_id\"\n" +
-                "\n" +
-                "[servers]\n" +
-                "modernprac = \"modernprac\"\n";
-        Files.write(configFile.toPath(), defaultConfig.getBytes());
     }
     
     private void startPlayerCountUpdater() {
@@ -133,20 +84,26 @@ public class VelocityPlaceholders {
                     });
                 },
                 () -> {
-                    logger.warn("Server '{}' (id: {}) not found!", serverName, serverId);
+                    logger.warn("Server '" + serverName + "' (id: " + serverId + ") not found!");
                     serverPlayerCounts.put(serverName, 0);
                 }
             );
         }
     }
     
-    /**
-     * Get the player count for a specific server
-     * @param serverName The server name (e.g., "modernprac")
-     * @return The player count, or 0 if not found
-     */
-    public int getPlayerCount(String serverName) {
-        return serverPlayerCounts.getOrDefault(serverName, 0);
+    @Override
+    protected PluginLogger getPluginLogger() {
+        return logger;
+    }
+    
+    @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
+    }
+    
+    @Override
+    public Object getLogger() {
+        return slf4jLogger;
     }
     
     /**
@@ -169,15 +126,4 @@ public class VelocityPlaceholders {
     public PlaceholderManager getPlaceholderManager() {
         return placeholderManager;
     }
-    
-    /**
-     * Replace all placeholders in a string
-     * Convenience method that delegates to PlaceholderManager
-     * @param text The text containing placeholders like %online_modernprac%
-     * @return The text with placeholders replaced
-     */
-    public String replacePlaceholders(String text) {
-        return placeholderManager.replacePlaceholders(text);
-    }
 }
-

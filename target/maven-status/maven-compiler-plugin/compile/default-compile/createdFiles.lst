@@ -1,3 +1,10 @@
+site\choice21\OnlinePlayersPlugin.class
+site\choice21\PluginLogger.class
 site\choice21\PlaceholderManager.class
-site\choice21\PluginConfig.class
+site\choice21\PaperPlaceholders.class
+site\choice21\OnlinePlayersPluginMain.class
 site\choice21\VelocityPlaceholders.class
+site\choice21\PaperLogger.class
+site\choice21\VelocityLogger.class
+site\choice21\PluginConfig.class
+site\choice21\AbstractOnlinePlayersPlugin.class
